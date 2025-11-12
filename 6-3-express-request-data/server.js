@@ -1,3 +1,6 @@
+import express from "express";
+import cors from "cors"
+const app = express();
 /**
 ===================================================================
 Back-end Lab — Express request data
@@ -36,6 +39,21 @@ LAB SETUP INSTRUCTIONS
  *     const app = express();
  *     app.listen(3000, ()=> console.log(...));
  * 
+ * */
+
+      app.use(cors());
+      const PORT = 3000;
+       
+       // Start the server and listen on the specified port
+       app.listen(PORT, () => {
+         console.log(`API running at http://localhost:${PORT}`);
+       });
+       
+       app.get("/", (req, res) => {
+         res.send("Welcome to the API — Server is running!");
+       });
+
+      /**
  *============================================
  * TODO-2 (/echo route):
  * ============================================
@@ -46,7 +64,17 @@ LAB SETUP INSTRUCTIONS
  *   HINT:
  *     app.get("/echo", (req,res)=>{ ... });
  *     const {name, age} = req.query;
- *
+ * */
+ app.get("/echo", (req, res) => {
+   const { name, age } = req.query;
+   if (!name || !age) {
+     return res.status(400).json({ ok: false, error: "name & age required" });
+   }
+   res.json({ ok: true, name, age, msg: `Hello ${name}, you are ${age}` });
+ });
+ 
+ 
+      /**
  * ============================================
  * TODO-3 (/profile/:first/:last route):
  * ============================================
@@ -56,7 +84,12 @@ LAB SETUP INSTRUCTIONS
  *   HINT:
  *     app.get("/profile/:first/:last", (req,res)=>{ ... });
  *     const { first, last } = req.params;
- *
+  * */
+      app.get("/profile/:first/:last", (req, res) => {
+         const { first, last } = req.params;
+         res.json({ ok: true, fullName: `${first} ${last}` });
+       });
+      /**
  * ============================================
  * TODO-4 (Param middleware):
  * ============================================
@@ -66,7 +99,20 @@ LAB SETUP INSTRUCTIONS
  *   - else store numeric value into req.userIdNum and call next()
  *   HINT:
  *     app.param("userId", (req,res,next,userId)=>{ ... });
- *
+ * */
+      app.param("userId", (req, res, next, userId) => {
+         const idNum = Number(userId);
+         if (!Number.isInteger(idNum) || idNum <= 0) {
+           return res
+             .status(400)
+             .json({ ok: false, error: "userId must be positive number" });
+         }
+         req.userIdNum = idNum;
+         next();
+       });
+       
+      /**
+       * 
  * ============================================
  * TODO-5 (/users/:userId route):
  * ============================================
@@ -74,7 +120,11 @@ LAB SETUP INSTRUCTIONS
  *   - return JSON: { ok:true, userId: req.userIdNum }
  *   HINT:
  *     app.get("/users/:userId", (req,res)=>{ ... });
- *
+  * */
+      app.get("/users/:userId", (req, res) => {
+         res.json({ ok: true, userId: req.userIdNum });
+       });
+      /**
  *============================================
  *Test the following URLS
  *============================================
@@ -104,8 +154,7 @@ LAB SETUP INSTRUCTIONS
  *
  */
 
-import express from "express";
-const app = express();
+
 
 
 // create server
